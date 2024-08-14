@@ -1,0 +1,17 @@
+
+plugins {
+  id 'cpp-library'
+}
+
+def javaHome = System.getenv("JAVA_HOME")
+if (!javaHome) {
+  throw new IllegalArgumentException("Please specify JAVA_HOME")
+}
+
+library {
+  targetMachines = [machines.linux.x86_64]
+  linkage = [Linkage.SHARED]
+  binaries.configureEach {
+    compileTask.get().compilerArgs.addAll(['-std=c++11', '-O2', "-I${javaHome}/include", "-I${javaHome}/include/linux/"])
+  }
+}
