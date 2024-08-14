@@ -4,14 +4,21 @@ plugins {
 }
 
 def javaHome = System.getenv("JAVA_HOME")
+def os = System.getProperty('os.name').toLowerCase()
+if (!os.contains("linux") && !os.contains("mac")) {
+  throw new IllegalStateException("Unknown os: " + os);
+}
+boolean isLinux = os.contains("linux")
+
 if (!javaHome) {
   throw new IllegalArgumentException("Please specify JAVA_HOME")
 }
 
 library {
-  targetMachines = [machines.linux.x86_64]
+  targetMachines = isLinux ? [machines.linux.x86_64] : [machines.macOS.x86_64]
   linkage = [Linkage.SHARED]
   binaries.configureEach {
-    compileTask.get().compilerArgs.addAll(['-std=c++11', '-O2', "-I${javaHome}/include", "-I${javaHome}/include/linux/"])
+    def distroPath = isLinux ? "${javaHome}/include/linux/" : "${javaHome}/include/darwin/"
+    compileTask.get().compilerArgs.addAll(['-std=c++11', '-O3', "-I${javaHome}/include", "-I${distroPath}"])
   }
 }

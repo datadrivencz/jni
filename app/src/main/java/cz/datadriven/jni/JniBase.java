@@ -6,6 +6,6 @@ class JniBase {
     System.loadLibrary("jni");
   }
 
-  native void jniPut(byte[] keyBytes, int length, byte[] valueBytes, int length1);
-  native String jniGet(byte[] bytes, int length);
+  native void jniPut(byte[] keyBytes, int length, byte[] value);
+  native byte[] jniGet(byte[] bytes, int length);
 }

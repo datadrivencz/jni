@@ -30,12 +30,14 @@ public class Test {
     String key = UUID.randomUUID().toString();
     String value = UUID.randomUUID().toString();
     long now = System.currentTimeMillis();
-    for (int i = 0; i < iterations; i++) {
-      String thisKey = key + i;
-      String thisValue = value + i;
-      what.get(thisKey);
-      what.put(thisKey, thisValue);
-      //Preconditions.checkState(thisValue.equals(what.get(thisKey)));
+    for (int step = 0; step < 5; step++) {
+      for (int i = 0; i < iterations; i++) {
+        String thisKey = key + i;
+        String thisValue = value + i;
+        what.get(thisKey);
+        what.put(thisKey, thisValue);
+        Preconditions.checkState(thisValue.equals(what.get(thisKey)));
+      }
     }
     long diff = System.currentTimeMillis() - now;
     System.out.printf("Result of %s: %d\n", what.getClass().getSimpleName(), diff);
@@ -54,16 +56,25 @@ interface Testable {
 
 class MapTestable implements Testable {
 
-  private final Map<String, String> map = new HashMap<>();
+  private final Map<String, byte[]> map = new HashMap<>();
+  private volatile Object placeholder;
 
   @Override
   public @Nullable String get(String key) {
-    return map.get(key);
+    // to emulate what JNI does
+    placeholder = key.getBytes(StandardCharsets.UTF_8);
+    byte[] bytes = map.get(key);
+    if (bytes != null) {
+      return new String(bytes, StandardCharsets.UTF_8);
+    }
+    return null;
   }
 
   @Override
   public void put(String key, String value) {
-    map.put(key, value);
+    // to emulate what JNI does
+    placeholder = key.getBytes(StandardCharsets.UTF_8);
+    map.put(key, value.getBytes(StandardCharsets.UTF_8));
   }
 }
 
@@ -72,14 +83,17 @@ class JniTestable extends JniBase implements Testable {
   @Override
   public String get(String key) {
     byte[] bytes = key.getBytes(StandardCharsets.UTF_8);
-    return jniGet(bytes, bytes.length);
+    byte[] value = jniGet(bytes, bytes.length);
+    if (value != null) {
+      return new String(value, StandardCharsets.UTF_8);
+    }
+    return null;
   }
 
   @Override
   public void put(String key, String value) {
     byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
-    byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
-    jniPut(keyBytes, keyBytes.length, valueBytes, valueBytes.length);
+    jniPut(keyBytes, keyBytes.length, value.getBytes(StandardCharsets.UTF_8));
   }
 
 }

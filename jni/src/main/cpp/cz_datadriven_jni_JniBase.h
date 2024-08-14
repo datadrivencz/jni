@@ -10,17 +10,17 @@ extern "C" {
 /*
  * Class:     cz_datadriven_jni_JniBase
  * Method:    jniPut
- * Signature: ([BI[BI)V
+ * Signature: ([BI[B)V
  */
 JNIEXPORT void JNICALL Java_cz_datadriven_jni_JniBase_jniPut
-  (JNIEnv *, jobject, jbyteArray, jint, jbyteArray, jint);
+  (JNIEnv *, jobject, jbyteArray, jint, jbyteArray);
 
 /*
  * Class:     cz_datadriven_jni_JniBase
  * Method:    jniGet
- * Signature: ([BI)Ljava/lang/String;
+ * Signature: ([BI)[B
  */
-JNIEXPORT jstring JNICALL Java_cz_datadriven_jni_JniBase_jniGet
+JNIEXPORT jbyteArray JNICALL Java_cz_datadriven_jni_JniBase_jniGet
   (JNIEnv *, jobject, jbyteArray, jint);
 
 #ifdef __cplusplus
